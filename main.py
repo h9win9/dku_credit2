@@ -10,17 +10,29 @@ import os
 import csv
 import io
 
-# --- 설정 및 보안 (클라우드 Postgres 대응) ---
+from sqlalchemy import create_engine
+
+# 1. 환경 변수 가져오기
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+# 🚨 만약 주소가 비어있다면, 서버가 죽지 않게 기본 주소라도 넣어주거나 에러 처리를 해야 해!
+if DATABASE_URL is None:
+    # 일단 임시로 sqlite라도 쓰게 해서 서버가 켜지게라도 만들자!
+    DATABASE_URL = "sqlite:///./test.db"
+    print("경고: DATABASE_URL 환경 변수를 찾을 수 없습니다. 임시 DB를 사용합니다.")
+
+# 2. postgres:// 를 postgresql:// 로 안전하게 교체
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# 3. 엔진 생성
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
+    # 쥐니가 넣은 sslmode 옵션은 아주 좋아! 그대로 유지하자.
     engine = create_engine(
-        DATABASE_URL,
-        connect_args={"sslmode": "require"} # "보안 연결 꼭 쓸게!"라고 말해주는 거야
+        DATABASE_URL, 
+        connect_args={"sslmode": "require"}
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
