@@ -221,7 +221,7 @@ async def admin_login_page(request: Request):
 async def process_admin_login(request: Request, student_id: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     if student_id not in ADMIN_STUDENTS: return templates.TemplateResponse(request=request, name="admin_login.html", context={"request": request, "error": "관리자 권한이 없습니다."})
     user = db.query(Student).filter(Student.student_id == student_id).first()
-    if not user or not pwd_context.verify(password, user.password_hash):
+    if not user or not user.is_verified:
         return templates.TemplateResponse(request=request, name="admin_login.html", context={"request": request, "error": "비밀번호가 틀렸습니다."})
     token = serializer.dumps({"admin_id": student_id})
     res = RedirectResponse(url="/admin/credit", status_code=302)
