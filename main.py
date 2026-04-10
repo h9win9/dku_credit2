@@ -11,7 +11,7 @@ import csv
 import io
 
 # --- 설정 및 보안 (클라우드 Postgres 대응) ---
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./engineering_credit.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
