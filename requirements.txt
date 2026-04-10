@@ -7,3 +7,5 @@ itsdangerous
 jinja2
 python-multipart
 pytz
+passlib
+bcrypt==3.2.2
