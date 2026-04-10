@@ -10,29 +10,30 @@ import os
 import csv
 import io
 
-from sqlalchemy import create_engine
-
-# 1. 환경 변수 가져오기
+# 1. 환경 변수 설정
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# 🚨 만약 주소가 비어있다면, 서버가 죽지 않게 기본 주소라도 넣어주거나 에러 처리를 해야 해!
 if DATABASE_URL is None:
-    # 일단 임시로 sqlite라도 쓰게 해서 서버가 켜지게라도 만들자!
     DATABASE_URL = "sqlite:///./test.db"
     print("경고: DATABASE_URL 환경 변수를 찾을 수 없습니다. 임시 DB를 사용합니다.")
 
-# 2. postgres:// 를 postgresql:// 로 안전하게 교체
+# postgres:// 를 postgresql:// 로 안전하게 교체
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# 3. 엔진 생성
+# 파라미터 충돌 방지 (주소 뒤에 불필요한 설정값 제거)
+if "?" in DATABASE_URL and "sqlite" not in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split("?")[0]
+
+# 2. 엔진 생성 (연결 끊김 방지 옵션 추가)
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
-    # 쥐니가 넣은 sslmode 옵션은 아주 좋아! 그대로 유지하자.
     engine = create_engine(
         DATABASE_URL, 
-        connect_args={"sslmode": "require"}
+        connect_args={"sslmode": "require"},
+        pool_pre_ping=True,  # DB 연결 살아있는지 자동 확인
+        pool_recycle=300     # 5분마다 연결 갱신
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -41,7 +42,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = "dankook_engineering_secret"
 serializer = URLSafeSerializer(SECRET_KEY)
 
-# 🚨 관리자 설정 및 초기 상태 변수
+# 관리자 설정 및 초기 상태 변수
 ADMIN_STUDENTS = ["32244983"]
 system_notice = "DKU 공대 크레딧 시스템에 오신 것을 환영합니다!" 
 event_state = {"is_active": False, "name": "", "amount": 0}
@@ -56,7 +57,7 @@ class Student(Base):
     password_hash = Column(String, nullable=True)
     is_verified = Column(Boolean, default=False)
     total_credits = Column(Integer, default=0)
-    phone_number = Column(String, nullable=True) # 전화번호 칸
+    phone_number = Column(String, nullable=True)
 
 class CreditLog(Base):
     __tablename__ = "credit_logs"
@@ -66,37 +67,29 @@ class CreditLog(Base):
     amount = Column(Integer)
     created_at = Column(DateTime, default=func.now())
 
-Base.metadata.create_all(bind=engine)
+# 🚨 Supabase 권한 에러(500) 방지를 위해 삭제/주석 처리!
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-if not os.path.exists("static"): os.makedirs("static")
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+
+# 🚨 템플릿 경로를 절대 경로로 설정 (경로 인식 에러 완벽 차단)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if not os.path.exists(os.path.join(BASE_DIR, "static")): 
+    os.makedirs(os.path.join(BASE_DIR, "static"))
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 def get_db():
     db = SessionLocal()
     try: yield db
     finally: db.close()
 
-# --- 🚨 기존 DB에 전화번호 칸을 추가하는 마법의 관리자 링크 ---
-@app.get("/admin/upgrade-db")
-async def upgrade_db(admin_session: str = Cookie(None), db: Session = Depends(get_db)):
-    if not admin_session: return "관리자 로그인(admin/login)을 먼저 해주세요."
-    try:
-        db.execute(text("ALTER TABLE students ADD COLUMN phone_number VARCHAR;"))
-        db.commit()
-        return "✅ DB 업데이트 성공! 이제 기존 가입자들의 전화번호를 받을 수 있습니다. 메인 화면으로 돌아가세요."
-    except Exception as e:
-        return f"⚠️ 이미 업데이트 되었거나 에러가 발생했습니다: {e}"
-
-
-# --- 일반 사용자 로직 ---
-
-# 🚨 Render의 생사 확인(Health Check)에 대답하는 방어 코드 추가! (521 에러 해결)
+# Render 생사 확인(Health Check) 방어 코드
 @app.head("/")
 async def ping():
     return Response(status_code=200)
 
+# --- 일반 사용자 로직 ---
 @app.get("/", response_class=HTMLResponse)
 async def login_page(request: Request, user_session: str = Cookie(None), db: Session = Depends(get_db)):
     if user_session:
@@ -104,11 +97,13 @@ async def login_page(request: Request, user_session: str = Cookie(None), db: Ses
             data = serializer.loads(user_session)
             user = db.query(Student).filter(Student.student_id == data["student_id"]).first()
             if user:
-                # 전화번호가 없으면 무조건 강제 이동
                 if not user.phone_number:
                     return RedirectResponse(url="/update-phone", status_code=303)
                 
-                logs = db.query(CreditLog).filter(CreditLog.student_id == user.student_id).order_by(CreditLog.created_at.desc()).all()
+                # 🚨 렌더링 에러 방지 (로그가 없어도 안전하게 처리)
+                logs_query = db.query(CreditLog).filter(CreditLog.student_id == user.student_id).order_by(CreditLog.created_at.desc())
+                logs = logs_query.all() if logs_query else []
+                
                 return templates.TemplateResponse(request=request, name="index.html", context={"request": request, "user": user, "logs": logs, "notice": system_notice, "event_state": event_state})
         except: pass
     return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "notice": system_notice, "event_state": event_state})
@@ -116,7 +111,9 @@ async def login_page(request: Request, user_session: str = Cookie(None), db: Ses
 @app.post("/")
 async def process_login(response: Response, request: Request, student_id: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     user = db.query(Student).filter(Student.student_id == student_id).first()
-    if not user or not user.is_verified or not pwd_context.verify(password[:72], user.password_hash):
+    
+    # 🚨 최종 보스 검거: .encode('utf-8')[:72] 처리 (바이트 에러 차단)
+    if not user or not user.is_verified or not pwd_context.verify(password.encode('utf-8')[:72], user.password_hash):
         return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "error": "학번 또는 비밀번호가 틀렸습니다.", "notice": system_notice, "event_state": event_state})
     
     token = serializer.dumps({"student_id": user.student_id})
@@ -131,7 +128,6 @@ async def logout():
     res.delete_cookie("admin_session")
     return res
 
-# --- 전화번호 수집 로직 ---
 @app.get("/update-phone", response_class=HTMLResponse)
 async def update_phone_page(request: Request, user_session: str = Cookie(None), db: Session = Depends(get_db)):
     if not user_session: return RedirectResponse(url="/")
@@ -184,9 +180,10 @@ async def process_signup(
     if existing_user: 
         return templates.TemplateResponse(request=request, name="signup.html", context={"request": request, "error": "이미 가입된 학번입니다.", "notice": system_notice, "event_state": event_state})
     
+    # 🚨 .encode('utf-8')[:72] 추가
     new_user = Student(
         student_id=student_id, name=name, department=department, grade=grade,
-        phone_number=phone_number, password_hash=pwd_context.hash(password), is_verified=True, total_credits=0
+        phone_number=phone_number, password_hash=pwd_context.hash(password.encode('utf-8')[:72]), is_verified=True, total_credits=0
     )
     db.add(new_user)
     db.commit()
@@ -199,17 +196,20 @@ async def forgot_pw_page(request: Request):
 @app.post("/forgot-password")
 async def process_forgot_pw(request: Request, student_id: str = Form(...), name: str = Form(...), new_password: str = Form(...), db: Session = Depends(get_db)):
     user = db.query(Student).filter(Student.student_id == student_id, Student.name == name).first()
-    if not user or not pwe_context.verify(password.encode('utf-8')[:72], user.password_hash) or not user.is_verified: 
+    if not user or not user.is_verified: 
         return templates.TemplateResponse(request=request, name="forgot_password.html", context={"request": request, "error": "정보가 일치하지 않습니다.", "notice": system_notice, "event_state": event_state})
         
-    user.password_hash = pwd_context.hash(new_password)
+    # 🚨 .encode('utf-8')[:72] 추가
+    user.password_hash = pwd_context.hash(new_password.encode('utf-8')[:72])
     db.commit()
-    return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "message": "비밀번호 변경 완료!", "notice": system_notice, "event_state": event_state})
+    
+    # 🚨 렌더링 에러 방지: 템플릿 반환 대신 깔끔하게 리다이렉트
+    return RedirectResponse(url="/", status_code=303)
 
 @app.get("/ranking", response_class=HTMLResponse)
 async def ranking_page(request: Request, db: Session = Depends(get_db)):
     students = db.query(Student).filter(Student.is_verified == True).order_by(Student.total_credits.desc()).all()
-    ranking = [{"rank": i+1, "name": s.name[0]+"*"+s.name[-1], "sid": s.student_id[:2]+"****"+s.student_id[-2:], "dept": s.department, "credits": s.total_credits} for i, s in enumerate(students)]
+    ranking = [{"rank": i+1, "name": s.name[0]+"*"+s.name[-1] if len(s.name)>2 else s.name[0]+"*", "sid": s.student_id[:2]+"****"+s.student_id[-2:], "dept": s.department, "credits": s.total_credits} for i, s in enumerate(students)]
     return templates.TemplateResponse(request=request, name="ranking.html", context={"request": request, "ranking": ranking})
 
 # --- 관리자 로직 ---
@@ -221,8 +221,11 @@ async def admin_login_page(request: Request):
 async def process_admin_login(request: Request, student_id: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     if student_id not in ADMIN_STUDENTS: return templates.TemplateResponse(request=request, name="admin_login.html", context={"request": request, "error": "관리자 권한이 없습니다."})
     user = db.query(Student).filter(Student.student_id == student_id).first()
-    if not user or not user.is_verified:
+    
+    # 🚨 관리자 로그인도 바이트 에러 방지
+    if not user or not pwd_context.verify(password.encode('utf-8')[:72], user.password_hash):
         return templates.TemplateResponse(request=request, name="admin_login.html", context={"request": request, "error": "비밀번호가 틀렸습니다."})
+    
     token = serializer.dumps({"admin_id": student_id})
     res = RedirectResponse(url="/admin/credit", status_code=302)
     res.set_cookie(key="admin_session", value=token, httponly=True)
@@ -275,7 +278,10 @@ async def admin_student_detail(request: Request, student_id: str, db: Session = 
     if not admin_session: return RedirectResponse(url="/admin/login")
     user = db.query(Student).filter(Student.student_id == student_id).first()
     if not user: return RedirectResponse(url="/admin/ranking")
-    logs = db.query(CreditLog).filter(CreditLog.student_id == student_id).order_by(CreditLog.created_at.desc()).all()
+    
+    logs_query = db.query(CreditLog).filter(CreditLog.student_id == student_id).order_by(CreditLog.created_at.desc())
+    logs = logs_query.all() if logs_query else []
+    
     return templates.TemplateResponse(request=request, name="admin_student_detail.html", context={"request": request, "user": user, "logs": logs})
 
 @app.get("/admin/download-ranking")
