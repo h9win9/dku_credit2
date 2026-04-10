@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width: 400px; text-align: center;">
+    <h2 style="color: var(--dk-navy); margin-bottom: 15px;">⚠️ 추가 정보 입력 필요</h2>
+
+    <div style="background: #fff3cd; border-left: 5px solid #ffc107; padding: 15px; margin-bottom: 25px; text-align: left; border-radius: 5px;">
+        <p style="margin: 0; color: #856404; font-size: 0.95rem; line-height: 1.6;">
+            <strong>[필수 안내]</strong><br>
+            나중에 상품 및 경품 지급 시 원활한 연락을 위해 전화번호가 반드시 필요합니다. 
+            <span style="color: red; font-weight: bold;">입력하지 않으시면 상품 지급 및 이벤트 참여에 지장</span>이 생길 수 있으니 꼭 정확하게 적어주세요!
+        </p>
+    </div>
+
+    <div class="card" style="text-align: left;">
+        <form action="/update-phone" method="post">
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">내 전화번호</label>
+                <input type="tel" name="phone_number" placeholder="예: 010-1234-5678" required style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 1.05rem;">
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 14px; background-color: var(--dk-blue); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1.1rem;">저장하고 메인 화면으로 가기</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

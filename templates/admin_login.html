@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="card" style="margin-top: 80px; border-top: 5px solid #333;">
+        <h2 style="text-align: center;">⚙️ 관리자 시스템 인증</h2>
+        {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+        <form action="/admin/login" method="post">
+            <div class="input-group"><label>관리자 ID (학번)</label><input type="text" name="student_id" required></div>
+            <div class="input-group"><label>비밀번호</label><input type="password" name="password" required></div>
+            <button type="submit" class="btn-primary" style="background: #333;">관리자 로그인</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

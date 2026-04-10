@@ -1,0 +1,131 @@
+/* 1. 기본 설정 및 컬러 변수 */
+:root {
+    --dk-navy: #00305d; /* 단국대 공식 네이비 */
+    --dk-blue: #0056a0;
+    --dk-gray: #f4f7f9;
+    --text-dark: #333;
+    --text-light: #fff;
+    --accent-green: #27ae60;
+    --accent-red: #e74c3c;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--dk-gray);
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* 2. 네비게이션 바 */
+nav {
+    background-color: var(--dk-navy);
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 3. 컨테이너 및 카드 */
+.container {
+    padding: 20px;
+    max-width: 600px; /* 모바일 최적화 폭 */
+    margin: 0 auto;
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* 4. 크레딧 강조 카드 */
+.credit-card {
+    background: linear-gradient(135deg, var(--dk-navy), var(--dk-blue));
+    color: white;
+    text-align: center;
+    border-radius: 20px;
+    padding: 30px;
+}
+
+.credit-card h3 { font-weight: 300; opacity: 0.9; }
+.credit-card .score {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 10px 0;
+}
+
+/* 5. 폼 및 입력창 */
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+/* 6. 버튼 스타일 */
+.btn-primary {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--dk-navy);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-primary:hover { background-color: var(--dk-blue); }
+
+/* 7. 랭킹/로그 테이블 */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+th { background-color: #f8f9fa; color: var(--dk-navy); }
+
+/* 8. 유틸리티 */
+.plus { color: var(--accent-green); font-weight: bold; }
+.minus { color: var(--accent-red); font-weight: bold; }
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.error { background-color: #fdeaea; color: var(--accent-red); }
+.success { background-color: #eafdeea; color: var(--accent-green); }

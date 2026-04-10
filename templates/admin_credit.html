@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2 style="color: var(--dk-navy); margin-bottom: 20px;">🛠 관리자 컨트롤 센터</h2>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+        <a href="/admin/download-ranking" class="btn-primary" style="background: #28a745; flex: 1; text-align: center; text-decoration: none; padding: 10px;">📗 엑셀 다운로드</a>
+        <a href="/admin/ranking" class="btn-primary" style="background: #6c757d; flex: 1; text-align: center; text-decoration: none; padding: 10px;">📊 실명 랭킹 확인</a>
+        <a href="/" style="background: #007bff; color: white; flex: 1; text-align: center; text-decoration: none; padding: 10px; border-radius: 5px; font-weight: bold;">🏠 메인 화면으로</a>
+    </div>
+
+    <div class="card" style="border-left: 5px solid #e83e8c; margin-bottom: 30px;">
+        <h4 style="margin-top: 0; color: #d63384;">⏱️ 실시간 행사 현장 적립 열기</h4>
+        
+        {% if event_state.is_active %}
+        <div style="background: #f8d7da; padding: 15px; border-radius: 5px; text-align: center; margin-bottom: 10px;">
+            <h5 style="margin: 0; color: #721c24;">🔥 현재 [ {{ event_state.name }} ] 적립 버튼이 학생들에게 보입니다! ({{ event_state.amount }}P)</h5>
+            <form action="/admin/toggle-event" method="post" style="margin-top: 15px;">
+                <input type="hidden" name="action" value="close">
+                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 1.1rem;">버튼 닫기 (마감)</button>
+            </form>
+        </div>
+        {% else %}
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">현장에 있는 학생들만 점수를 받을 수 있도록 행사 중에 잠깐만 열어두세요!</p>
+        <form action="/admin/toggle-event" method="post" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="hidden" name="action" value="open">
+            <input type="text" name="event_name" placeholder="행사명 (예: 개강총회 현장)" required style="flex: 2; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <input type="number" name="amount" placeholder="지급 점수" required style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <button type="submit" style="background: #20c997; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer;">버튼 열기</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="card" style="margin-bottom: 30px; border-left: 5px solid #fab005;">
+        <h4 style="margin-top: 0; color: #856404;">📝 학생 공지사항 수정</h4>
+        <form action="/admin/update-notice" method="post" style="display: flex; gap: 10px;">
+            <input type="text" name="notice_text" value="{{ notice }}" style="flex: 4; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" required>
+            <button type="submit" style="flex: 1; background: #fab005; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">공지 변경</button>
+        </form>
+    </div>
+
+    <div class="card" style="border-left: 5px solid var(--dk-blue);">
+        <h4 style="margin-top: 0; color: var(--dk-navy);">💰 크레딧 일괄 지급 (사후 적립용)</h4>
+        {% if message %}<div class="alert success">{{ message }}</div>{% endif %}
+        
+        <form action="/admin/credit" method="post">
+            <div class="input-group">
+                <label>행사 명칭</label>
+                <input type="text" name="event_name" placeholder="예: 간식 행사 참여" required>
+            </div>
+            <div class="input-group">
+                <label>지급 점수</label>
+                <input type="number" name="amount" placeholder="100" required>
+            </div>
+            <div class="input-group">
+                <label>대상 학번 (한 줄에 하나씩)</label>
+                <textarea name="student_ids_raw" rows="5" placeholder="32244983" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">점수 지급하기</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

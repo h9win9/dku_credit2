@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2 style="text-align: center; color: var(--dk-navy); margin: 30px 0;">🏆 공대 크레딧 실시간 랭킹</h2>
+    
+    <div class="card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>이름</th>
+                        <th>학과</th>
+                        <th>크레딧</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in ranking %}
+                    <tr>
+                        <td>{{ s.rank }}위</td>
+                        <td>{{ s.name }} ({{ s.sid }})</td>
+                        <td>{{ s.dept }}</td>
+                        <td class="plus">{{ s.credits }} P</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+    	<a href="/" style="color: var(--dk-blue); text-decoration: none; font-weight: bold;">🏠 내 정보로 돌아가기</a>
+    </div>
+</div>
+{% endblock %}

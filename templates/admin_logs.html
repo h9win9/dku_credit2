@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="admin-container">
+    <h2>📋 전체 크레딧 지급 로그</h2>
+    <p>실수로 지급된 점수를 취소하면 학생의 총점에서도 자동 차감됩니다.</p>
+
+    <div class="table-wrapper">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>날짜</th>
+                    <th>학번</th>
+                    <th>항목</th>
+                    <th>점수</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.created_at.strftime('%m/%d %H:%M') }}</td>
+                    <td>{{ log.student_id }}</td>
+                    <td>{{ log.event_name }}</td>
+                    <td class="bold">{{ log.amount }} P</td>
+                    <td>
+                        <button onclick="deleteLog({{ log.id }})" class="btn-delete">취소</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async def deleteLog(logId) {
+    if (confirm("정말로 이 지급 내역을 취소하시겠습니까? 학생의 총점에서도 차감됩니다.")) {
+        const response = await fetch(`/admin/logs/delete/${logId}`, { method: 'POST' });
+        if (response.ok) {
+            alert("취소 완료!");
+            location.reload();
+        } else {
+            alert("오류가 발생했습니다.");
+        }
+    }
+}
+</script>
+{% endblock %}

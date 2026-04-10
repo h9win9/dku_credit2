@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width: 400px;">
+    <h2 style="text-align: center; color: var(--dk-navy);">회원가입</h2>
+    
+    {% if error %}
+    <div class="alert error" style="color: red; margin-bottom: 15px;">{{ error }}</div>
+    {% endif %}
+
+    <div class="card">
+        <form action="/signup" method="post">
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">학번</label>
+                <input type="text" name="student_id" placeholder="예: 32xxxxxx" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">이름</label>
+                <input type="text" name="name" placeholder="이름을 입력하세요" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">학과</label>
+                <select name="department" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: white; font-family: inherit;">
+                    <option value="" disabled selected>본인의 학과를 선택해주세요</option>
+                    <option value="기계공학과">기계공학과</option>
+                    <option value="건축학부 건축공학과">건축학부 건축공학전공</option>
+                    <option value="건축학부 건축학과">건축학부 건축학전공</option>
+                    <option value="고분자시스템공학부 고분자공학전공">고분자시스템공학부 고분자공학전공</option>
+                    <option value="고분자시스템공학부 융합소재공학전공">고분자시스템공학부 융합소재공학전공</option>
+                    <option value="전자전기공학과">전자전기공학과</option>
+                    <option value="융합반도체공학과">융합반도체공학과</option>
+                    <option value="인프라건설공학과">인프라건설공학과</option>
+                    <option value="화학공학과">화학공학과</option>
+                    </select>
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">학년</label>
+                <input type="number" name="grade" placeholder="예: 3" min="1" max="4" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">전화번호 (필수)</label>
+                <input type="tel" name="phone_number" placeholder="예: 010-1234-5678" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">비밀번호</label>
+                <input type="password" name="password" placeholder="비밀번호 설정" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+            
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; background-color: var(--dk-blue); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">가입하기</button>
+        </form>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="/" style="color: #666; text-decoration: none;">로그인 화면으로 돌아가기</a>
+    </div>
+</div>
+{% endblock %}

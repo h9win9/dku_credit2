@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container" style="padding: 10px;">
+    <div style="background: #fff9db; border: 1px solid #fab005; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <span style="margin-right: 10px; font-size: 1.2rem;">📢</span>
+        <marquee style="font-size: 0.95rem; color: #856404; font-weight: bold;">{{ notice }}</marquee>
+    </div>
+
+    <div style="text-align: right; margin-bottom: 15px;">
+        <a href="/logout" style="font-size: 0.85rem; color: #ff4d4d; text-decoration: none; border: 1px solid #ff4d4d; padding: 5px 12px; border-radius: 6px; font-weight: bold;">로그아웃</a>
+    </div>
+
+    {% if event_state.is_active %}
+    <div style="background: #e6fcf5; border: 2px solid #20c997; border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: blink 1.5s infinite alternate;">
+        <h3 style="margin-top: 0; color: #0ca678;">🎁 {{ event_state.name }} 진행 중!</h3>
+        <p style="color: #2b8a3e; margin-bottom: 15px;">지금 아래 버튼을 눌러 <strong>{{ event_state.amount }}P</strong>를 받으세요.</p>
+        
+        <form action="/claim-event" method="post">
+            <button type="submit" style="background: #12b886; color: white; border: none; padding: 15px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(18, 184, 134, 0.4);">👆 터치해서 크레딧 적립하기</button>
+        </form>
+    </div>
+    <style>
+        @keyframes blink {
+            from { box-shadow: 0 0 5px #20c997; }
+            to { box-shadow: 0 0 20px #20c997; }
+        }
+    </style>
+    {% endif %}
+
+    <div class="credit-card" style="background: linear-gradient(135deg, #002c5f, #005eb8); color: white; padding: 35px 20px; border-radius: 15px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <h3 style="font-size: 1rem; opacity: 0.85; margin: 0; font-weight: normal;">내 보유 크레딧</h3>
+        <p style="font-size: 3rem; font-weight: bold; margin: 8px 0;">{{ user.total_credits }} <span style="font-size: 1.5rem;">P</span></p>
+        <p style="font-size: 0.9rem; opacity: 0.9;">{{ user.name }} ({{ user.department }})</p>
+    </div>
+
+    <h3 style="font-size: 1.15rem; margin-bottom: 12px; color: #333; display: flex; align-items: center;">
+        <span style="margin-right: 8px;">📜</span> 적립 내역
+    </h3>
+    
+    <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 30px;">
+        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table style="width: 100%; min-width: 320px; border-collapse: collapse; font-size: 0.9rem;">
+                <thead style="background: #f8f9fa;">
+                    <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                        <th style="padding: 14px 12px; color: #666;">날짜</th>
+                        <th style="padding: 14px 12px; color: #666;">내용</th>
+                        <th style="padding: 14px 12px; color: #666; text-align: right;">포인트</th>
+                    </tr>
+                </thead>
+                <tbody>
+			{% if logs %}
+				{% for log in logs %}
+				<tr style="border-bottom: 1px solid #f1f3f5;">
+					<td style="padding: 12px; color: #888; white-space: nowrap;">
+						{{ log.created_at.strftime('%m/%d') if log.created_at else '기록없음' }}
+					</td>
+					<td style="padding: 12px; font-weight: 500;">{{ log.event_name }}</td>
+					<td style="padding: 12px; font-weight: bold; color: #005eb8; text-align:right;">+{{ log.amount }}</td>
+				</tr>
+				{% endfor %}
+			{% else %}
+				<tr>
+					<td colspan="3" style="padding: 40px; text-align: center; color: #adb5bd;">아직 적립된 내역이 없어요. 🍃</td>
+				</tr>
+			{% endif %}
+		</tbody>
+            </table>
+        </div>
+    </div>
+
+    <a href="/ranking" class="btn-primary" style="display: block; text-align: center; text-decoration: none; padding: 16px; font-size: 1.1rem; border-radius: 10px; background: var(--dk-navy); color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🏆 전체 랭킹 보러가기</a>
+</div>
+{% endblock %}

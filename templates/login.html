@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="max-width: 400px;">
+    <h2 style="text-align: center; color: var(--dk-navy);">DKU 공대 크레딧 로그인</h2>
+    
+    {% if message %}
+    <div class="alert success" style="color: green; margin-bottom: 15px;">{{ message }}</div>
+    {% endif %}
+    
+    {% if error %}
+    <div class="alert error" style="color: red; margin-bottom: 15px;">{{ error }}</div>
+    {% endif %}
+
+    <div class="card">
+        <form action="/" method="post">
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">학번</label>
+                <input type="text" name="student_id" placeholder="예: 32xxxxxx" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">비밀번호</label>
+                <input type="password" name="password" placeholder="비밀번호" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+            
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; background-color: var(--dk-blue); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">로그인</button>
+        </form>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="/signup" style="color: #007bff; text-decoration: none; margin-right: 15px; font-weight: bold;">새로 오셨나요? 회원가입</a>
+        <a href="/forgot-password" style="color: #6c757d; text-decoration: none;">비밀번호 찾기</a>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="/admin/login" style="color: #adb5bd; font-size: 0.8rem; text-decoration: none;">⚙️ 관리자 모드</a>
+    </div>
+</div>
+{% endblock %}

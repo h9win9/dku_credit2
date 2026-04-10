@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="color: #333;">📋 관리자용 전체 명단 (실명)</h2>
+        <a href="/admin/credit" style="text-decoration: none; color: #666; font-size: 0.9rem;">🔙 점수 지급으로</a>
+    </div>
+
+    <div class="card">
+        <div class="table-wrapper">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background-color: #f4f4f4;">
+                    <tr>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">순위</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">학번</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">이름</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">학과</th>
+                        <th style="padding: 12px; border-bottom: 2px solid #ddd;">크레딧</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in ranking %}
+                    <tr style="text-align: center; border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px;">{{ s.rank }}</td>
+                        
+                        <td style="padding: 10px; font-weight: bold;">
+                            <a href="/admin/student/{{ s.sid }}" style="color: var(--dk-navy); text-decoration: underline;">{{ s.sid }}</a>
+                        </td>
+                        
+                        <td style="padding: 10px;">{{ s.name }}</td>
+                        <td style="padding: 10px;">{{ s.dept }}</td>
+                        <td style="padding: 10px; color: var(--dk-blue); font-weight: bold;">{{ s.credits }} P</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

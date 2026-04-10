@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div style="margin-bottom: 20px;">
+        <a href="/admin/ranking" style="text-decoration: none; color: #666;">⬅️ 전체 명단으로 돌아가기</a>
+    </div>
+
+    <div class="card" style="border-left: 5px solid var(--dk-blue); margin-bottom: 30px;">
+        <h2 style="margin-bottom: 10px;">👤 {{ user.name }} 학생 상세 정보</h2>
+        <p>학번: <strong>{{ user.student_id }}</strong> | 학과: {{ user.department }} | 학년: {{ user.grade }}학년</p>
+        <p style="font-size: 1.2rem; margin-top: 10px;">총 보유 크레딧: <span style="color: var(--dk-blue); font-weight: bold;">{{ user.total_credits }} P</span></p>
+    </div>
+
+    <h3>📜 크레딧 적립 히스토리</h3>
+    <div class="card">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                    <th style="padding: 10px;">날짜</th>
+                    <th style="padding: 10px;">행사명</th>
+                    <th style="padding: 10px;">지급 점수</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if logs %}
+                    {% for log in logs %}
+                    <tr style="border-bottom: 1px solid #f9f9f9;">
+                        <td style="padding: 10px; font-size: 0.9rem; color: #888;">{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td style="padding: 10px;">{{ log.event_name }}</td>
+                        <td style="padding: 10px; font-weight: bold; color: green;">+{{ log.amount }} P</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3" style="padding: 20px; text-align: center; color: #999;">적립 내역이 없습니다.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
