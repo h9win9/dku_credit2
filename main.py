@@ -186,7 +186,7 @@ async def process_signup(
     
     new_user = Student(
         student_id=student_id, name=name, department=department, grade=grade,
-        phone_number=phone_number, password_hash=pwd_context.hash(password[:72]), is_verified=True, total_credits=0
+        phone_number=phone_number, password_hash=pwd_context.hash(password), is_verified=True, total_credits=0
     )
     db.add(new_user)
     db.commit()
@@ -202,7 +202,7 @@ async def process_forgot_pw(request: Request, student_id: str = Form(...), name:
     if not user or not user.is_verified: 
         return templates.TemplateResponse(request=request, name="forgot_password.html", context={"request": request, "error": "정보가 일치하지 않습니다.", "notice": system_notice, "event_state": event_state})
         
-    user.password_hash = pwd_context.hash(new_password[:72])
+    user.password_hash = pwd_context.hash(new_password)
     db.commit()
     return templates.TemplateResponse(request=request, name="login.html", context={"request": request, "message": "비밀번호 변경 완료!", "notice": system_notice, "event_state": event_state})
 
@@ -221,7 +221,7 @@ async def admin_login_page(request: Request):
 async def process_admin_login(request: Request, student_id: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     if student_id not in ADMIN_STUDENTS: return templates.TemplateResponse(request=request, name="admin_login.html", context={"request": request, "error": "관리자 권한이 없습니다."})
     user = db.query(Student).filter(Student.student_id == student_id).first()
-    if not user or not pwd_context.verify(password[:72], user.password_hash):
+    if not user or not pwd_context.verify(password, user.password_hash):
         return templates.TemplateResponse(request=request, name="admin_login.html", context={"request": request, "error": "비밀번호가 틀렸습니다."})
     token = serializer.dumps({"admin_id": student_id})
     res = RedirectResponse(url="/admin/credit", status_code=302)
