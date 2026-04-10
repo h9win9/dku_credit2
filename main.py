@@ -199,7 +199,7 @@ async def forgot_pw_page(request: Request):
 @app.post("/forgot-password")
 async def process_forgot_pw(request: Request, student_id: str = Form(...), name: str = Form(...), new_password: str = Form(...), db: Session = Depends(get_db)):
     user = db.query(Student).filter(Student.student_id == student_id, Student.name == name).first()
-    if not user or not user.is_verified: 
+    if not user or not pwe_context.verify(password.encode('utf-8')[:72], user.password_hash) or not user.is_verified: 
         return templates.TemplateResponse(request=request, name="forgot_password.html", context={"request": request, "error": "정보가 일치하지 않습니다.", "notice": system_notice, "event_state": event_state})
         
     user.password_hash = pwd_context.hash(new_password)
