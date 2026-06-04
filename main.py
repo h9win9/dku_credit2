@@ -301,3 +301,24 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+# --- 관리자 전용: 특정 학생 크레딧 및 로그 초기화 API ---
+@app.post("/admin/reset-student")
+async def reset_student_credit(
+    student_id: str = Form(...), 
+    db: Session = Depends(get_db), 
+    admin_session: str = Cookie(None)
+):
+    if not admin_session: 
+        return RedirectResponse(url="/admin/login", status_code=303)
+        
+    # 1. 해당 학생이 있는지 확인
+    user = db.query(Student).filter(Student.student_id == student_id).first()
+    if user:
+        # 2. 크레딧 로그 삭제
+        db.query(CreditLog).filter(CreditLog.student_id == student_id).delete()
+        # 3. 총 크레딧 0원으로 변경
+        user.total_credits = 0
+        db.commit()
+        
+    return RedirectResponse(url="/admin/credit?message=reset_success", status_code=303)
