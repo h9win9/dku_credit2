@@ -60,6 +60,19 @@
         </form>
     </div>
 
+    <div style="margin-top: 30px; padding: 20px; border: 1px solid #ff4d4d; border-radius: 8px;">
+    <h3 style="color: #ff4d4d; margin-top: 0;">⚠️ 특정 학생 테스트 데이터 초기화</h3>
+    <p style="font-size: 14px; color: #666;">입력한 학번의 모든 크레딧 로그를 지우고 보유 크레딧을 0으로 리셋합니다.</p>
+    <form action="/admin/reset-student" method="post" style="display: flex; gap: 10px;">
+        <input type="text" name="student_id" placeholder="초기화할 학번 입력" required 
+               style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1;">
+        <button type="submit" onclick="return confirm('정말 이 학생의 크레딧을 전부 초기화하시겠습니까?');" 
+                style="background-color: #ff4d4d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            크레딧 0원으로 리셋
+        </button>
+    </form>
+</div>
+
     
 </div>
 {% endblock %}
