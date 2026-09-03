@@ -61,18 +61,49 @@
     </div>
 
     <div style="margin-top: 30px; padding: 20px; border: 1px solid #ff4d4d; border-radius: 8px;">
-    <h3 style="color: #ff4d4d; margin-top: 0;">⚠️ 특정 학생 테스트 데이터 초기화</h3>
-    <p style="font-size: 14px; color: #666;">입력한 학번의 모든 크레딧 로그를 지우고 보유 크레딧을 0으로 리셋합니다.</p>
-    <form action="/admin/reset-student" method="post" style="display: flex; gap: 10px;">
-        <input type="text" name="student_id" placeholder="초기화할 학번 입력" required 
-               style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1;">
-        <button type="submit" onclick="return confirm('정말 이 학생의 크레딧을 전부 초기화하시겠습니까?');" 
-                style="background-color: #ff4d4d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
-            크레딧 0원으로 리셋
-        </button>
-    </form>
+        <h3 style="color: #ff4d4d; margin-top: 0;">⚠️ 특정 학생 테스트 데이터 초기화</h3>
+        <p style="font-size: 14px; color: #666;">입력한 학번의 모든 크레딧 로그를 지우고 보유 크레딧을 0으로 리셋합니다.</p>
+        <form action="/admin/reset-student" method="post" style="display: flex; gap: 10px;">
+            <input type="text" name="student_id" placeholder="초기화할 학번 입력" required 
+                   style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1;">
+            <button type="submit" onclick="return confirm('정말 이 학생의 크레딧을 전부 초기화하시겠습니까?');" 
+                    style="background-color: #ff4d4d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                크레딧 0원으로 리셋
+            </button>
+        </form>
+    </div>
+
+    <!-- 🚨 새로 추가된 전체 학생 초기화 구역 🚨 -->
+    <div style="margin-top: 30px; padding: 20px; border: 2px solid #dc3545; border-radius: 8px; background-color: #fff8f8;">
+        <h3 style="color: #dc3545; margin-top: 0;">🚨 [위험] 전체 학생 데이터 초기화</h3>
+        <p style="font-size: 14px; color: #666;">
+            모든 학생의 크레딧 획득 내역이 완전히 삭제되며, 보유 포인트가 0으로 리셋됩니다.<br>
+            <strong>※ 행사 시작 전, 테스트 데이터를 일괄 삭제할 때만 주의해서 사용하세요.</strong>
+        </p>
+        <form action="/admin/reset-all-students" method="post" onsubmit="return confirmAllReset();">
+            <button type="submit" 
+                    style="background-color: #dc3545; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%;">
+                전체 학생 크레딧 0원으로 완전 초기화
+            </button>
+        </form>
+    </div>
+
 </div>
 
-    
-</div>
+<!-- 이중 잠금 확인용 자바스크립트 -->
+<script>
+function confirmAllReset() {
+    var firstConfirm = confirm('정말 모든 학생의 크레딧을 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.');
+    if (firstConfirm) {
+        var secondConfirm = prompt('초기화를 진행하려면 빈칸에 "초기화진행" 이라고 정확히 입력해주세요.');
+        if (secondConfirm === '초기화진행') {
+            return true;
+        } else {
+            alert('입력 문구가 일치하지 않아 안전하게 취소되었습니다.');
+            return false;
+        }
+    }
+    return false;
+}
+</script>
 {% endblock %}
