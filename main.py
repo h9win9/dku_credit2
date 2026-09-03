@@ -322,3 +322,22 @@ async def reset_student_credit(
         db.commit()
         
     return RedirectResponse(url="/admin/credit?message=reset_success", status_code=303)
+
+# --- 관리자 전용: 모든 학생 크레딧 및 로그 전체 초기화 API ---
+@app.post("/admin/reset-all-students")
+async def reset_all_students_credit(
+    db: Session = Depends(get_db), 
+    admin_session: str = Cookie(None)
+):
+    if not admin_session: 
+        return RedirectResponse(url="/admin/login", status_code=303)
+        
+    # 1. 모든 학생의 크레딧 획득 내역(로그) 일괄 삭제
+    db.query(CreditLog).delete()
+    
+    # 2. 모든 학생의 총 크레딧을 0으로 일괄 업데이트
+    db.query(Student).update({Student.total_credits: 0})
+    
+    db.commit()
+        
+    return RedirectResponse(url="/admin/credit?message=all_reset_success", status_code=303)
